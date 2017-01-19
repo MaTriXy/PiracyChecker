@@ -1,4 +1,4 @@
-<h1 align="center">PiracyChecker</h1>
+<h1 align="center">PiracyChecker <a href="https://github.com/javiersantos/PiracyChecker#how-to-include"><img src="https://jitpack.io/v/javiersantos/PiracyChecker.svg"></a></h1>
 <h4 align="center">Android Library</h4>
 
 <p align="center">
@@ -6,7 +6,6 @@
   <a target="_blank" href="https://travis-ci.org/javiersantos/PiracyChecker"><img src="https://travis-ci.org/javiersantos/PiracyChecker.svg?branch=master"></a>
   <a target="_blank" href="http://android-arsenal.com/details/1/3641"><img src="https://img.shields.io/badge/Android%20Arsenal-PiracyChecker-blue.svg"></a>
   <a target="_blank" href="https://www.paypal.me/javiersantos" title="Donate using PayPal"><img src="https://img.shields.io/badge/paypal-donate-yellow.svg" /></a>
-  <a target="_blank" href="http://patreon.com/javiersantos" title="Donate using Patreon"><img src="https://img.shields.io/badge/patreon-donate-yellow.svg" /></a>
 </p>
 
 <p align="center">An Android library that prevents your app from being pirated / cracked using Google Play Licensing (LVL), APK signature protection and more.</p>
@@ -92,7 +91,7 @@ Use the builder and add following:
 // Provide a custom callback. When using this method you must be aware of blocking the app from unauthorized users.
 // Default: The app will display a non-cancelable dialog if the user is not allowed to use the app, otherwise nothing will happen.
 .callback(new PiracyCheckerCallback() {
-	@Overrirde
+	@Override
 	public void allow() {
 		// Do something when the user is allowed to use the app
 		
