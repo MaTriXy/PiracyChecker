@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.google.android.vending.licensing.util;
+package com.github.javiersantos.licensing.util;
 
 /**
  * Exception thrown when encountering an invalid Base64 input character.
@@ -20,13 +20,13 @@ package com.google.android.vending.licensing.util;
  * @author nelson
  */
 public class Base64DecoderException extends Exception {
-  public Base64DecoderException() {
-    super();
-  }
+    private static final long serialVersionUID = 1L;
 
-  public Base64DecoderException(String s) {
-    super(s);
-  }
+    public Base64DecoderException() {
+        super();
+    }
 
-  private static final long serialVersionUID = 1L;
+    public Base64DecoderException(String s) {
+        super(s);
+    }
 }

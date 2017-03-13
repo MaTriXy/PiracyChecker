@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.google.android.vending.licensing;
+package com.github.javiersantos.licensing;
 
-import com.google.android.vending.licensing.util.Base64;
-import com.google.android.vending.licensing.util.Base64DecoderException;
+import com.github.javiersantos.licensing.util.Base64;
+import com.github.javiersantos.licensing.util.Base64DecoderException;
 
 import android.text.TextUtils;
 import android.util.Log;
@@ -27,13 +27,13 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
+import java.util.Calendar;
 
 /**
- * Contains data related to a licensing request and methods to verify
- * and process the response.
+ * Contains data related to a licensing request and methods to check and process the response.
  */
-class LicenseValidator {
-    private static final String TAG = "LicenseValidator";
+class LibraryValidator {
+    private static final String TAG = "LibraryValidator";
 
     // Server response codes.
     private static final int LICENSED = 0x0;
@@ -46,16 +46,16 @@ class LicenseValidator {
     private static final int ERROR_CONTACTING_SERVER = 0x101;
     private static final int ERROR_INVALID_PACKAGE_NAME = 0x102;
     private static final int ERROR_NON_MATCHING_UID = 0x103;
-
+    private static final String SIGNATURE_ALGORITHM = "SHA1withRSA";
     private final Policy mPolicy;
-    private final LicenseCheckerCallback mCallback;
+    private final LibraryCheckerCallback mCallback;
     private final int mNonce;
     private final String mPackageName;
     private final String mVersionCode;
     private final DeviceLimiter mDeviceLimiter;
 
-    LicenseValidator(Policy policy, DeviceLimiter deviceLimiter, LicenseCheckerCallback callback,
-             int nonce, String packageName, String versionCode) {
+    LibraryValidator(Policy policy, DeviceLimiter deviceLimiter, LibraryCheckerCallback callback,
+                     int nonce, String packageName, String versionCode) {
         mPolicy = policy;
         mDeviceLimiter = deviceLimiter;
         mCallback = callback;
@@ -64,7 +64,7 @@ class LicenseValidator {
         mVersionCode = versionCode;
     }
 
-    public LicenseCheckerCallback getCallback() {
+    public LibraryCheckerCallback getCallback() {
         return mCallback;
     }
 
@@ -76,28 +76,32 @@ class LicenseValidator {
         return mPackageName;
     }
 
-    private static final String SIGNATURE_ALGORITHM = "SHA1withRSA";
-
     /**
      * Verifies the response from server and calls appropriate callback method.
      *
-     * @param publicKey public key associated with the developer account
+     * @param publicKey    public key associated with the developer account
      * @param responseCode server response code
-     * @param signedData signed data from server
-     * @param signature server signature
+     * @param signedData   signed data from server
+     * @param signature    server signature
      */
-    public void verify(PublicKey publicKey, int responseCode, String signedData, String signature) {
+    public void check(PublicKey publicKey, int responseCode, String signedData, Calendar calendar, String signature) {
         String userId = null;
         // Skip signature check for unsuccessful requests
         ResponseData data = null;
-        if (responseCode == LICENSED || responseCode == NOT_LICENSED ||
+
+        if (calendar == null) {
+            handleInvalidResponse();
+        } else if (responseCode == LICENSED || responseCode == NOT_LICENSED ||
                 responseCode == LICENSED_OLD_KEY) {
-            if (signedData == null) {
-                handleInvalidResponse();
-                return;
-            }
             // Verify signature.
             try {
+                if (TextUtils.isEmpty(signedData)) {
+                    Log.e(TAG, "Signature verification failed: signedData is empty. " +
+                            "(Device not signed-in to any Google accounts?)");
+                    handleInvalidResponse();
+                    return;
+                }
+
                 Signature sig = Signature.getInstance(SIGNATURE_ALGORITHM);
                 sig.initVerify(publicKey);
                 sig.update(signedData.getBytes());
@@ -107,14 +111,12 @@ class LicenseValidator {
                     handleInvalidResponse();
                     return;
                 }
-            } catch (NoSuchAlgorithmException e) {
+            } catch (NoSuchAlgorithmException | SignatureException e) {
                 // This can't happen on an Android compatible device.
                 throw new RuntimeException(e);
             } catch (InvalidKeyException e) {
-                handleApplicationError(LicenseCheckerCallback.ERROR_INVALID_PUBLIC_KEY);
+                handleApplicationError(LibraryCheckerCallback.ERROR_INVALID_PUBLIC_KEY);
                 return;
-            } catch (SignatureException e) {
-                throw new RuntimeException(e);
             } catch (Base64DecoderException e) {
                 Log.e(TAG, "Could not Base64-decode signature.");
                 handleInvalidResponse();
@@ -185,13 +187,13 @@ class LicenseValidator {
                 handleResponse(Policy.RETRY, data);
                 break;
             case ERROR_INVALID_PACKAGE_NAME:
-                handleApplicationError(LicenseCheckerCallback.ERROR_INVALID_PACKAGE_NAME);
+                handleApplicationError(LibraryCheckerCallback.ERROR_INVALID_PACKAGE_NAME);
                 break;
             case ERROR_NON_MATCHING_UID:
-                handleApplicationError(LicenseCheckerCallback.ERROR_NON_MATCHING_UID);
+                handleApplicationError(LibraryCheckerCallback.ERROR_NON_MATCHING_UID);
                 break;
             case ERROR_NOT_MARKET_MANAGED:
-                handleApplicationError(LicenseCheckerCallback.ERROR_NOT_MARKET_MANAGED);
+                handleApplicationError(LibraryCheckerCallback.ERROR_NOT_MARKET_MANAGED);
                 break;
             default:
                 Log.e(TAG, "Unknown response code for license check.");
@@ -201,9 +203,6 @@ class LicenseValidator {
 
     /**
      * Confers with policy and calls appropriate callback method.
-     *
-     * @param response
-     * @param rawData
      */
     private void handleResponse(int response, ResponseData rawData) {
         // Update policy data and increment retry counter (if needed)

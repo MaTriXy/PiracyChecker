@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-package com.google.android.vending.licensing;
+package com.github.javiersantos.licensing;
 
 /**
- * Indicates that an error occurred while validating the integrity of data managed by an
- * {@link Obfuscator}.}
+ * Indicates that an error occurred while validating the integrity of data managed by an {@link
+ * Obfuscator}.}
  */
 public class ValidationException extends Exception {
+    private static final long serialVersionUID = 1L;
+
     public ValidationException() {
-      super();
+        super();
     }
 
     public ValidationException(String s) {
-      super(s);
+        super(s);
     }
-
-    private static final long serialVersionUID = 1L;
 }
