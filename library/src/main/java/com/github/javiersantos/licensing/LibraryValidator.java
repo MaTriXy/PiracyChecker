@@ -16,11 +16,11 @@
 
 package com.github.javiersantos.licensing;
 
-import com.github.javiersantos.licensing.util.Base64;
-import com.github.javiersantos.licensing.util.Base64DecoderException;
-
 import android.text.TextUtils;
 import android.util.Log;
+
+import com.github.javiersantos.licensing.util.Base64;
+import com.github.javiersantos.licensing.util.Base64DecoderException;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -79,12 +79,17 @@ class LibraryValidator {
     /**
      * Verifies the response from server and calls appropriate callback method.
      *
-     * @param publicKey    public key associated with the developer account
-     * @param responseCode server response code
-     * @param signedData   signed data from server
-     * @param signature    server signature
+     * @param publicKey
+     *         public key associated with the developer account
+     * @param responseCode
+     *         server response code
+     * @param signedData
+     *         signed data from server
+     * @param signature
+     *         server signature
      */
-    public void check(PublicKey publicKey, int responseCode, String signedData, Calendar calendar, String signature) {
+    public void check(PublicKey publicKey, int responseCode, String signedData, Calendar calendar,
+                      String signature) {
         String userId = null;
         // Skip signature check for unsuccessful requests
         ResponseData data = null;
